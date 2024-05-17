@@ -1,0 +1,65 @@
+Builder/CoopRate
+true
+leave
+
+Builder/subdivision
+building name/city
+state code
+city name
+leave
+active
+leave
+leave
+zip of building
+address of building name
+SI homes
+lat
+long
+hard code
+hard code
+leave
+leave and hard code all contacts
+leave
+leave
+leave
+use what he put
+11
+leave
+true
+leave
+leave
+this is a note
+leave
+
+
+sub division/property
+leave
+address
+zip
+price
+lat
+long
+PROPERTY
+AV
+use what he sent(legend)
+year-01-01
+use what we did for before
+append features with full stop
+leave
+hard code all contacts or leave
+[use info]
+other rooms-leave
+---------------------------------------------------------------
+
+
+
+
+
+
+---------------------------------------------------------------
+
+Under Construction - UMK
+Under contract -dont gen
+Completed - COM
+Rented/Available dont gen
+Sold dont gen

@@ -1,4 +1,5 @@
 import scrapy
+from homescraper.items import HomeItem
 import re
 
 class HomespiderSpider(scrapy.Spider):
@@ -39,12 +40,14 @@ class HomespiderSpider(scrapy.Spider):
         address_map = {entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in data[len(features):-len(basic_details)]}
         address_map ['latitude'] = float(response.text.split('googlemap_lt":')[1].split(',')[0])
         address_map ['longitude'] = float(response.text.split('googlemap_ln":')[1].split(',')[0])
-        yield{
-            'name':name,
-            'basic_details':{entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in basic_details},
-            'address_map':address_map,
-            'features':features,
-            'images':images,
-            'video_link':video_link,
-            'blueprint':blueprint
-          }
+        address_map['address'] = response.css('span.wpl-location::text').get()
+        home_item = HomeItem()
+        home_item['name']=name
+        home_item['basic_details']={entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in basic_details}
+        home_item['address_map']=address_map
+        home_item['features']=features
+        home_item['images']=images
+        home_item['video_link']=video_link
+        home_item['blueprint']=blueprint
+        yield home_item
+
