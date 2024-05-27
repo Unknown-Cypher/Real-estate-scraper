@@ -50,9 +50,9 @@ hard code all contacts or leave
 [use info]
 other rooms-leave
 ---------------------------------------------------------------
-
-
-
+single subdivision and property
+cdata
+give formal description of xml structure
 
 
 

@@ -1,5 +1,6 @@
 import scrapy
 class HomeItem(scrapy.Item):
+    cities = scrapy.Field()
     name = scrapy.Field()
     basic_details = scrapy.Field()
     address_map = scrapy.Field()
@@ -43,6 +44,9 @@ class SubImage(scrapy.Item):
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
 
+class Image(scrapy.Item):
+    sub_image = scrapy.Field(default = SubImage())
+
 class SubVideo(scrapy.Item):
     sub_video_url = scrapy.Field(default="")
     sub_video_caption = scrapy.Field(default="")
@@ -55,6 +59,9 @@ class SubVideo(scrapy.Item):
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
 
+class Video(scrapy.Item):
+    sub_video = scrapy.Field(default = SubVideo())
+
 class SubdivisionFlyer(scrapy.Item):
     subdivision_flyer_image_url = scrapy.Field(default="")
     subdivision_flyer_description = scrapy.Field(default="")
@@ -63,6 +70,9 @@ class SubdivisionFlyer(scrapy.Item):
         for field, metadata in self.fields.items():
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
+
+class Flyer(scrapy.Item):
+    subdivision_flyer = scrapy.Field(default = SubdivisionFlyer())
 
 class PropertyElevationImage(scrapy.Item):
     property_elevation_image_url = scrapy.Field(default="")
@@ -73,14 +83,19 @@ class PropertyElevationImage(scrapy.Item):
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
 
+class Elevation(scrapy.Item):
+    property_elevation_image = scrapy.Field(default = PropertyElevationImage())
+
 class PropertyExteriorInteriorImage(scrapy.Item):
     property_interior_image_url = scrapy.Field(default="")
     property_interior_image_description = scrapy.Field(default="")
-
     def initialize_defaults(self):
         for field, metadata in self.fields.items():
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
+
+class ExteriorInterior(scrapy.Item):
+    property_exterior_interior_image = scrapy.Field(default = PropertyExteriorInteriorImage())
 
 class PropertyFloorPlanImage(scrapy.Item):
     property_floor_plan_image_url = scrapy.Field(default="")
@@ -90,6 +105,9 @@ class PropertyFloorPlanImage(scrapy.Item):
         for field, metadata in self.fields.items():
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
+
+class FloorPlan(scrapy.Item):
+    property_floor_plan_image = scrapy.Field(default = PropertyFloorPlanImage())
 
 class SubdivisionProperty(scrapy.Item):
     property_id = scrapy.Field(default="")
@@ -119,7 +137,7 @@ class SubdivisionProperty(scrapy.Item):
     property_living = scrapy.Field()
     property_dining = scrapy.Field()
     property_other_rooms = scrapy.Field(default="")
-    property_stories = scrapy.Field()
+    property_stories = scrapy.Field(default="")
     property_master = scrapy.Field(default="")
     property_garage = scrapy.Field()
     property_school_district_leaid = scrapy.Field(default = ["",""])
@@ -136,15 +154,18 @@ class SubdivisionProperty(scrapy.Item):
     property_has_hoa = scrapy.Field(default="True")
     property_hoa_fee = scrapy.Field(default="")
     property_hoa_billing_period = scrapy.Field(default="")
-    property_floor_plan_image = scrapy.Field(default=PropertyFloorPlanImage())
-    property_elevation_image = scrapy.Field(default=PropertyElevationImage())
-    property_exterior_interior_image = scrapy.Field()
+    _property_floor_plan_image = scrapy.Field(default=FloorPlan())
+    _property_elevation_image = scrapy.Field(default=Elevation())
+    _property_exterior_interior_image = scrapy.Field()
     promotion = scrapy.Field(default=Promotion())
 
     def initialize_defaults(self):
         for field, metadata in self.fields.items():
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
+
+class Property(scrapy.Item):
+    subdivision_property = scrapy.Field(default = SubdivisionProperty())
 
 class Subdivision(scrapy.Item):
     subdivision_name = scrapy.Field()
@@ -179,10 +200,10 @@ class Subdivision(scrapy.Item):
     subdivision_hoa_billing_period = scrapy.Field(default="")
     subdivision_notes = scrapy.Field(default="This is a note")
     subdivision_website = scrapy.Field(default="")
-    subdivision_property = scrapy.Field()
-    subdivision_flyer = scrapy.Field(default=SubdivisionFlyer())
-    sub_image = scrapy.Field(default=SubImage())
-    sub_video = scrapy.Field(default=SubVideo())
+    _subdivision_property = scrapy.Field()
+    _subdivision_flyer = scrapy.Field(default=Flyer())
+    _sub_image = scrapy.Field(default=Image())
+    _sub_video = scrapy.Field(default=Video())
     promotion = scrapy.Field(default=Promotion())
 
     def initialize_defaults(self):
@@ -190,9 +211,12 @@ class Subdivision(scrapy.Item):
             if 'default' in metadata:
                 self.setdefault(field, metadata['default'])
 
+class Division(scrapy.Item):
+    subdivision = scrapy.Field(default = Subdivision())
+
 class Builder(scrapy.Item):
     coop_rate = scrapy.Field(default=CoopRate())
-    subdivision = scrapy.Field()
+    _subdivision = scrapy.Field()
     xmlns_p1 = scrapy.Field(default='SubdivisionSchema')
     xmlns_xsi = scrapy.Field(default = 'http://www.w3.org/2001/XMLSchema-instance')
 
