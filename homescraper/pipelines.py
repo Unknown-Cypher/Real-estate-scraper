@@ -1,6 +1,8 @@
 from itemadapter import ItemAdapter
 import xml.etree.ElementTree as ET
 import ast
+import copy
+import json
 from json2xml import json2xml
 import homescraper.items 
 class HomescraperPipeline:
@@ -16,7 +18,7 @@ class HomescraperPipeline:
                     value[key] = value[key].replace('$', '').strip()
                     value[key] = value[key].rstrip('Sqft').strip()
                     if key == 'Status' and (value[key] == "Completed" or value[key] == "Under Construction"):
-                        self.items.append(item)
+                        self.items.append(copy.deepcopy(item))
                 adapter[field] = value
         return item
         
@@ -27,11 +29,10 @@ class HomescraperPipeline:
         coop_rate = homescraper.items.CoopRate()
         coop_rate.initialize_defaults()
         Builder['coop_rate'] =coop_rate
-
-        Builder['_subdivision'] = []
+        Builder['subdivision_'] = []
         for item in self.items:
             i=0
-            for subdivision in Builder['_subdivision']:
+            for subdivision in Builder['subdivision_']:
                 subdivision = subdivision['subdivision']
                 if item['address_map']['City'] == subdivision['subdivision_name']:
                     i = 1
@@ -53,9 +54,9 @@ class HomescraperPipeline:
                 video['sub_video'] = SubVideo
                 Promotion = homescraper.items.Promotion()
                 Promotion.initialize_defaults()
-                Subdivision['_subdivision_flyer'] = flyer
-                Subdivision['_sub_image'] = image
-                Subdivision['_sub_video'] = video
+                Subdivision['subdivision_flyer_'] = flyer
+                Subdivision['sub_image_'] = image
+                Subdivision['sub_video_'] = video
                 Subdivision['promotion'] = Promotion
 
                 Subdivision['subdivision_website'] = item['cities'][item['address_map']['City'].strip()]
@@ -72,10 +73,10 @@ class HomescraperPipeline:
                     Subdivision['subdivision_property_type_id'] = 1
                 else:
                     Subdivision['subdivision_property_type_id'] = 23
-                Subdivision['_subdivision_property'] = []
+                Subdivision['subdivision_property_'] = []
                 division = homescraper.items.Division()
                 division['subdivision'] = Subdivision
-                Builder['_subdivision'].append(division)
+                Builder['subdivision_'].append(division)
             else:
                 i=0
         
@@ -84,6 +85,7 @@ class HomescraperPipeline:
             SubdivisionProperty.initialize_defaults()
             PropertyFloorPlanImage = homescraper.items.PropertyFloorPlanImage()
             PropertyFloorPlanImage.initialize_defaults()
+            PropertyFloorPlanImage['property_floor_plan_image_url'] = item['blueprint'][0]
             floor_plan = homescraper.items.FloorPlan()
             floor_plan['property_floor_plan_image'] = PropertyFloorPlanImage
             PropertyElevationImage = homescraper.items.PropertyElevationImage()
@@ -93,8 +95,8 @@ class HomescraperPipeline:
             Promotion = homescraper.items.Promotion()
             Promotion.initialize_defaults()
             SubdivisionProperty['promotion'] = Promotion
-            SubdivisionProperty['_property_floor_plan_image'] = floor_plan
-            SubdivisionProperty['_property_elevation_image'] = elevation
+            SubdivisionProperty['property_floor_plan_image_'] = floor_plan
+            SubdivisionProperty['property_elevation_image_'] = elevation
 
             SubdivisionProperty['property_address'] = item['address_map']['address'].split(',')[0]
             SubdivisionProperty['property_zip'] = item['address_map']['Zip_Code']
@@ -122,25 +124,26 @@ class HomescraperPipeline:
                 SubdivisionProperty['property_virtual_tour'] =item['video_link']
             else:
                 SubdivisionProperty['property_virtual_tour'] = ""
-            SubdivisionProperty['property_plan_view_url'] =item['blueprint'][0]
-            SubdivisionProperty['_property_exterior_interior_image'] = []
+            SubdivisionProperty['property_exterior_interior_image_'] = []
             for image in item['images']:
                Image =  homescraper.items.PropertyExteriorInteriorImage()
                Image.initialize_defaults()
                Image['property_interior_image_url'] =image
                img = homescraper.items.ExteriorInterior()
                img['property_exterior_interior_image'] = Image
-               SubdivisionProperty['_property_exterior_interior_image'].append(img)
-            for subdivision in Builder['_subdivision']:
+               SubdivisionProperty['property_exterior_interior_image_'].append(img)
+            for subdivision in Builder['subdivision_']:
                  subdivision = subdivision['subdivision']
                  if item['address_map']['City'] == subdivision['subdivision_name']:
                     property = homescraper.items.Property()
                     property['subdivision_property'] = SubdivisionProperty
-                    subdivision['_subdivision_property'].append(property)
+                    subdivision['subdivision_property_'].append(property)
                     break
         welcome = homescraper.items.Welcome10()
         welcome['builder'] = Builder
         dt = ast.literal_eval(str(welcome))
+        with open('data.json','w') as f:
+            json.dump(dt,f,indent=4)
         xml = json2xml.Json2xml(dt,item_wrap=False).to_xml()
         root = ET.fromstring(xml)
         xml = list(root)[0]
@@ -150,7 +153,7 @@ class HomescraperPipeline:
                 del parent.attrib['type']
             for elem in list(parent):
                 remove_undesired_elements(elem)
-                if elem.tag.startswith('_'):
+                if elem.tag.endswith('_'):
                     index = list(parent).index(elem)
                     for child in reversed(list(elem)):
                         parent.insert(index, child)
@@ -176,7 +179,7 @@ class HomescraperPipeline:
         # remove_type_attributes(xml)
 
         xml = ET.tostring(xml, encoding='unicode')
-        with open('data1.xml','w') as f:
+        with open('data.xml','w') as f:
             f.write('<?xml version="1.0" ?>\n' + xml)
         pass
 

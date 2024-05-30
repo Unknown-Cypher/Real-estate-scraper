@@ -11,6 +11,7 @@ class HomespiderSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(HomespiderSpider, self).__init__(*args, **kwargs)
         self.home_item = HomeItem()
+    
     def parse(self, response):
         l1 = response.css('li.menu-item-object-page li.menu-item-type-custom a::text').extract()
         l2 = response.css('li.menu-item-object-page li.menu-item-type-custom a::attr(href)').extract()
@@ -29,6 +30,7 @@ class HomespiderSpider(scrapy.Spider):
     
 
     def parse_home(self, response):
+        # Removes html elemnts from the strings extracted
         def clean_html(data):
           clean = re.compile('<.*?>')
           data = re.sub(clean,'',data)
