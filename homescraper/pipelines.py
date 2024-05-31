@@ -12,7 +12,7 @@ class HomescraperPipeline:
         adapter = ItemAdapter(item)
         field_names = adapter.field_names()
         for field in field_names:
-            if field == 'basic_details':
+            if field == 'BasicDetails':
                 value = adapter.get(field)
                 for key in value.keys():
                     value[key] = value[key].replace('$', '').strip()
@@ -28,13 +28,13 @@ class HomescraperPipeline:
         Builder.initialize_defaults()
         coop_rate = homescraper.items.CoopRate()
         coop_rate.initialize_defaults()
-        Builder['coop_rate'] =coop_rate
-        Builder['subdivision_'] = []
+        Builder['CoopRate'] =coop_rate
+        Builder['Subdivision_'] = []
         for item in self.items:
             i=0
-            for subdivision in Builder['subdivision_']:
-                subdivision = subdivision['subdivision']
-                if item['address_map']['City'] == subdivision['subdivision_name']:
+            for subdivision in Builder['Subdivision_']:
+                subdivision = subdivision['Subdivision']
+                if item['AddressMap']['City'] == subdivision['SubdivisionName']:
                     i = 1
                     break
             if i == 0:
@@ -43,40 +43,40 @@ class HomescraperPipeline:
                 SubdivisionFlyer = homescraper.items.SubdivisionFlyer()
                 SubdivisionFlyer.initialize_defaults()
                 flyer = homescraper.items.Flyer()
-                flyer['subdivision_flyer'] = SubdivisionFlyer
+                flyer['SubdivisionFlyer'] = SubdivisionFlyer
                 SubImage = homescraper.items.SubImage()
                 SubImage.initialize_defaults()
                 image = homescraper.items.Image()
-                image['sub_image'] = SubImage
+                image['SubImage'] = SubImage
                 SubVideo = homescraper.items.SubVideo()
                 SubVideo.initialize_defaults()
                 video = homescraper.items.Video()
-                video['sub_video'] = SubVideo
+                video['SubVideo'] = SubVideo
                 Promotion = homescraper.items.Promotion()
                 Promotion.initialize_defaults()
-                Subdivision['subdivision_flyer_'] = flyer
-                Subdivision['sub_image_'] = image
-                Subdivision['sub_video_'] = video
-                Subdivision['promotion'] = Promotion
+                Subdivision['SubdivisionFlyer_'] = flyer
+                Subdivision['SubImage_'] = image
+                Subdivision['SubVideo_'] = video
+                Subdivision['Promotion'] = Promotion
 
-                Subdivision['subdivision_website'] = item['cities'][item['address_map']['City'].strip()]
-                Subdivision['subdivision_name'] = item['address_map']['City']
-                Subdivision['subdivision_state_code'] = item['address_map']['State']
-                Subdivision['subdivision_city_name'] = item['address_map']['City']
-                Subdivision['subdivision_zip'] = item['address_map']['Zip_Code']
-                Subdivision['subdivision_address'] = item['address_map']['Zip_Code'] + ' ' +item['address_map']["Street"]
-                Subdivision['subdivision_latitude'] = item['address_map']['latitude']
-                Subdivision['subdivision_longitude'] = item['address_map']['longitude']
-                if item["basic_details"]['Property_Type'] == 'Multi-Family':
-                    Subdivision['subdivision_property_type_id'] = 2
-                elif item["basic_details"]['Property_Type'] == 'Single Family':
-                    Subdivision['subdivision_property_type_id'] = 1
+                Subdivision['SubdivisionWebsite'] = item['Cities'][item['AddressMap']['City'].strip()]
+                Subdivision['SubdivisionName'] = item['AddressMap']['City']
+                Subdivision['SubdivisionStateCode'] = item['AddressMap']['State']
+                Subdivision['SubdivisionCityName'] = item['AddressMap']['City']
+                Subdivision['SubdivisionZip'] = item['AddressMap']['Zip_Code']
+                Subdivision['SubdivisionAddress'] = item['AddressMap']['Zip_Code'] + ' ' +item['AddressMap']["Street"]
+                Subdivision['SubdivisionLatitude'] = item['AddressMap']['latitude']
+                Subdivision['SubdivisionLongitude'] = item['AddressMap']['longitude']
+                if item["BasicDetails"]['Property_Type'] == 'Multi-Family':
+                    Subdivision['SubdivisionPropertyTypeId'] = 2
+                elif item["BasicDetails"]['Property_Type'] == 'Single Family':
+                    Subdivision['SubdivisionPropertyTypeId'] = 1
                 else:
-                    Subdivision['subdivision_property_type_id'] = 23
-                Subdivision['subdivision_property_'] = []
+                    Subdivision['SubdivisionPropertyTypeId'] = 23
+                Subdivision['SubdivisionProperty_'] = []
                 division = homescraper.items.Division()
-                division['subdivision'] = Subdivision
-                Builder['subdivision_'].append(division)
+                division['Subdivision'] = Subdivision
+                Builder['Subdivision_'].append(division)
             else:
                 i=0
         
@@ -85,62 +85,62 @@ class HomescraperPipeline:
             SubdivisionProperty.initialize_defaults()
             PropertyFloorPlanImage = homescraper.items.PropertyFloorPlanImage()
             PropertyFloorPlanImage.initialize_defaults()
-            PropertyFloorPlanImage['property_floor_plan_image_url'] = item['blueprint'][0]
+            PropertyFloorPlanImage['PropertyFloorPlanImageUrl'] = item['Blueprint'][0]
             floor_plan = homescraper.items.FloorPlan()
-            floor_plan['property_floor_plan_image'] = PropertyFloorPlanImage
+            floor_plan['PropertyFloorPlanImage'] = PropertyFloorPlanImage
             PropertyElevationImage = homescraper.items.PropertyElevationImage()
             PropertyElevationImage.initialize_defaults()
             elevation = homescraper.items.Elevation()
-            elevation['property_elevation_image'] = PropertyElevationImage
+            elevation['PropertyElevationImage'] = PropertyElevationImage
             Promotion = homescraper.items.Promotion()
             Promotion.initialize_defaults()
-            SubdivisionProperty['promotion'] = Promotion
-            SubdivisionProperty['property_floor_plan_image_'] = floor_plan
-            SubdivisionProperty['property_elevation_image_'] = elevation
+            SubdivisionProperty['Promotion'] = Promotion
+            SubdivisionProperty['PropertyFloorPlanImage_'] = floor_plan
+            SubdivisionProperty['PropertyElevationImage_'] = elevation
 
-            SubdivisionProperty['property_address'] = item['address_map']['address'].split(',')[0]
-            SubdivisionProperty['property_zip'] = item['address_map']['Zip_Code']
-            SubdivisionProperty['property_latitude'] = item['address_map']['latitude']
-            SubdivisionProperty['property_longitude'] = item['address_map']['longitude']
-            SubdivisionProperty['property_price'] = item["basic_details"]["Price"].replace(',','')
-            if item["basic_details"]['Status'] == "Completed":
-                SubdivisionProperty['property_stage_id'] = 'COM'
+            SubdivisionProperty['PropertyAddress'] = item['AddressMap']['address'].split(',')[0]
+            SubdivisionProperty['PropertyZip'] = item['AddressMap']['Zip_Code']
+            SubdivisionProperty['PropertyLatitude'] = item['AddressMap']['latitude']
+            SubdivisionProperty['PropertyLongitude'] = item['AddressMap']['longitude']
+            SubdivisionProperty['PropertyPrice'] = item["BasicDetails"]["Price"].replace(',','')
+            if item['BasicDetails']['Status'] == "Completed":
+                SubdivisionProperty['PropertyStageId'] = 'COM'
             else:
-                SubdivisionProperty['property_stage_id'] = 'UNK'
-            if "Year_Built" in item["basic_details"].keys():
-                SubdivisionProperty['completion_date'] = item["basic_details"]["Year_Built"]+'-01-01'
-            if item["basic_details"]['Property_Type'] == 'Multi-Family':
-                    SubdivisionProperty['property_type_id'] = 2
-            elif item["basic_details"]['Property_Type'] == 'Single Family':
-                    SubdivisionProperty['property_type_id'] = 1
+                SubdivisionProperty['PropertyStageId'] = 'UNK'
+            if "Year_Built" in item['BasicDetails'].keys():
+                SubdivisionProperty['CompletionDate'] = item['BasicDetails']["Year_Built"]+'-01-01'
+            if item['BasicDetails']['Property_Type'] == 'Multi-Family':
+                    SubdivisionProperty['PropertyTypeId'] = 2
+            elif item['BasicDetails']['Property_Type'] == 'Single Family':
+                    SubdivisionProperty['PropertyTypeId'] = 1
             else:
-                    SubdivisionProperty['property_type_id'] = 23
-            SubdivisionProperty['property_remarks'] = '. '.join(item["features"])
-            SubdivisionProperty['property_baths'] = item["basic_details"]["Bathrooms"]
-            SubdivisionProperty['property_beds'] = item["basic_details"]["Bedrooms"]
-            SubdivisionProperty['property_garage'] = item["basic_details"]["Garage"]
-            SubdivisionProperty['property_square_feet'] = item["basic_details"]["Square_Footage"].replace(',','')
-            if item['video_link'] is not None:
-                SubdivisionProperty['property_virtual_tour'] =item['video_link']
+                    SubdivisionProperty['PropertyTypeId'] = 23
+            SubdivisionProperty['PropertyRemarks'] = '. '.join(item["Features"])
+            SubdivisionProperty['PropertyBaths'] = item['BasicDetails']["Bathrooms"]
+            SubdivisionProperty['PropertyBeds'] = item['BasicDetails']["Bedrooms"]
+            SubdivisionProperty['PropertyGarage'] = item['BasicDetails']["Garage"]
+            SubdivisionProperty['PropertySquareFeet'] = item['BasicDetails']["Square_Footage"].replace(',','')
+            if item['VideoLink'] is not None:
+                SubdivisionProperty['PropertyVirtualTour'] =item['VideoLink']
             else:
-                SubdivisionProperty['property_virtual_tour'] = ""
-            SubdivisionProperty['property_exterior_interior_image_'] = []
-            for image in item['images']:
+                SubdivisionProperty['PropertyVirtualTour'] = ""
+            SubdivisionProperty['PropertyExteriorInteriorImage_'] = []
+            for image in item['Images']:
                Image =  homescraper.items.PropertyExteriorInteriorImage()
                Image.initialize_defaults()
-               Image['property_interior_image_url'] =image
+               Image['PropertyInteriorImageUrl'] =image
                img = homescraper.items.ExteriorInterior()
-               img['property_exterior_interior_image'] = Image
-               SubdivisionProperty['property_exterior_interior_image_'].append(img)
-            for subdivision in Builder['subdivision_']:
-                 subdivision = subdivision['subdivision']
-                 if item['address_map']['City'] == subdivision['subdivision_name']:
+               img['PropertyExteriorInteriorImage'] = Image
+               SubdivisionProperty['PropertyExteriorInteriorImage_'].append(img)
+            for subdivision in Builder['Subdivision_']:
+                 subdivision = subdivision['Subdivision']
+                 if item['AddressMap']['City'] == subdivision['SubdivisionName']:
                     property = homescraper.items.Property()
-                    property['subdivision_property'] = SubdivisionProperty
-                    subdivision['subdivision_property_'].append(property)
+                    property['SubdivisionProperty'] = SubdivisionProperty
+                    subdivision['SubdivisionProperty_'].append(property)
                     break
         welcome = homescraper.items.Welcome10()
-        welcome['builder'] = Builder
+        welcome['Builder'] = Builder
         dt = ast.literal_eval(str(welcome))
         with open('data.json','w') as f:
             json.dump(dt,f,indent=4)
@@ -160,16 +160,6 @@ class HomescraperPipeline:
                     parent.remove(elem)
         remove_undesired_elements(xml)
 
-        #code to convert snake case to pascal case
-        def snake_to_pascal(text):
-            parts = text.split('_')
-            return ''.join(part.capitalize() for part in parts)
-        def convert_xml_tags_to_pascal_case(root):
-            root.tag = snake_to_pascal(root.tag)
-            for elem in root.iter():
-                elem.tag = snake_to_pascal(elem.tag)
-        convert_xml_tags_to_pascal_case(xml)
-
         #code to remove unnecessary attributes
         # def remove_type_attributes(element):
         #     if 'type' in element.attrib:
@@ -181,6 +171,8 @@ class HomescraperPipeline:
         xml = ET.tostring(xml, encoding='unicode')
         with open('data.xml','w') as f:
             f.write('<?xml version="1.0" ?>\n' + xml)
+
+        
         pass
 
 

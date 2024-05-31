@@ -15,7 +15,7 @@ class HomespiderSpider(scrapy.Spider):
     def parse(self, response):
         l1 = response.css('li.menu-item-object-page li.menu-item-type-custom a::text').extract()
         l2 = response.css('li.menu-item-object-page li.menu-item-type-custom a::attr(href)').extract()
-        self.home_item['cities'] = {key:value for key,value in zip(l1,l2)}
+        self.home_item['Cities'] = {key:value for key,value in zip(l1,l2)}
         # Extracting links to individual home pages
         home_links = response.css('a.view_detail::attr(href)').extract()
         del home_links[1::2]
@@ -50,12 +50,12 @@ class HomespiderSpider(scrapy.Spider):
         address_map ['longitude'] = float(response.text.split('googlemap_ln":')[1].split(',')[0])
         address_map['address'] = response.css('span.wpl-location::text').get()
         
-        self.home_item['name']=name
-        self.home_item['basic_details']={entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in basic_details}
-        self.home_item['address_map']=address_map
-        self.home_item['features']=features
-        self.home_item['images']=images
-        self.home_item['video_link']=video_link
-        self.home_item['blueprint']=blueprint
+        self.home_item['Name']=name
+        self.home_item['BasicDetails']={entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in basic_details}
+        self.home_item['AddressMap']=address_map
+        self.home_item['Features']=features
+        self.home_item['Images']=images
+        self.home_item['VideoLink']=video_link
+        self.home_item['Blueprint']=blueprint
         yield self.home_item
 
