@@ -1,11 +1,8 @@
 from itemadapter import ItemAdapter
-import xml.etree.ElementTree as ET
-import pickle
-from xml.etree.ElementTree import Element, SubElement, tostring
-import ast
+# import xml.etree.ElementTree as ET
+from lxml import etree as ET
+from lxml.etree import Element, SubElement
 import copy
-import json
-from json2xml import json2xml
 import homescraper.items 
 class HomescraperPipeline:
     def __init__(self):
@@ -57,7 +54,8 @@ class HomescraperPipeline:
                 Subdivision['SubVideo'].append(SubVideo)
                 Subdivision['Promotion'] = Promotion
 
-                Subdivision['SubdivisionWebsite'] = item['Cities'][item['AddressMap']['City'].strip()]
+                if item['AddressMap']['City'] in item['Cities']:
+                    Subdivision['SubdivisionWebsite'] = item['Cities'][item['AddressMap']['City']]
                 Subdivision['SubdivisionName'] = item['AddressMap']['City']
                 Subdivision['SubdivisionStateCode'] = item['AddressMap']['State']
                 Subdivision['SubdivisionCityName'] = item['AddressMap']['City']
@@ -111,8 +109,11 @@ class HomescraperPipeline:
                     SubdivisionProperty['PropertyTypeId'] = '23'
             SubdivisionProperty['PropertyRemarks'] = '. '.join(item["Features"])
             SubdivisionProperty['PropertyBaths'] = item['BasicDetails']["Bathrooms"]
+            SubdivisionProperty['FloorPlanName'] = item['AddressMap']['address']
+            SubdivisionProperty['FloorPlanNumber'] = item['AddressMap']['address']
             SubdivisionProperty['PropertyBeds'] = item['BasicDetails']["Bedrooms"]
             SubdivisionProperty['PropertyGarage'] = item['BasicDetails']["Garage"]
+            SubdivisionProperty['PropertyClassCode'] = SubdivisionProperty['PropertyClassCode'].split(',')
             SubdivisionProperty['PropertySquareFeet'] = item['BasicDetails']["Square_Footage"].replace(',','')
             if item['VideoLink'] is not None:
                 SubdivisionProperty['PropertyVirtualTour'] =item['VideoLink']
@@ -134,271 +135,269 @@ class HomescraperPipeline:
         # converts python object to xml
         def create_builder_xml(welcome):
             builder = welcome['Builder']
-            Builder = Element('Builder', {
-                'xmlns:p1': builder['XmlnsP1'],
-                'xmlns:xsi': builder['XmlnsXsi']
+            Builder = Element('Builder', nsmap= {
+                'p1': builder['XmlnsP1'],
+                'xsi': builder['XmlnsXsi']
             })
             
             CoopRate = SubElement(Builder, 'CoopRate')
             cooprate = builder['CoopRate']
             HonorsCoopRate = SubElement(CoopRate, 'HonorsCoopRate')
-            HonorsCoopRate.text = cooprate['HonorsCoopRate']
+            HonorsCoopRate.text = ET.CDATA(cooprate['HonorsCoopRate'])
             
             CoopRatePct = SubElement(CoopRate, 'CoopRatePct')
-            CoopRatePct.text = cooprate['CoopRatePct']
+            CoopRatePct.text = ET.CDATA(cooprate['CoopRatePct'])
             for subdivision in builder['Subdivision']:
                 Subdivision = SubElement(Builder, 'Subdivision')
                 SubdivisionName = SubElement(Subdivision, 'SubdivisionName')
-                SubdivisionName.text = subdivision['SubdivisionName']
+                SubdivisionName.text = ET.CDATA(subdivision['SubdivisionName'])
                 SubdivisionStateCode = SubElement(Subdivision, 'SubdivisionStateCode')
-                SubdivisionStateCode.text = subdivision['SubdivisionStateCode']
+                SubdivisionStateCode.text = ET.CDATA(subdivision['SubdivisionStateCode'])
                 SubdivisionCityName = SubElement(Subdivision, 'SubdivisionCityName')
-                SubdivisionCityName.text = subdivision['SubdivisionCityName']
+                SubdivisionCityName.text = ET.CDATA(subdivision['SubdivisionCityName'])
                 SubdivisionNumber = SubElement(Subdivision, 'SubdivisionNumber')
-                SubdivisionNumber.text = subdivision['SubdivisionNumber']
+                SubdivisionNumber.text = ET.CDATA(subdivision['SubdivisionNumber'])
                 CommunityStatusTypeCode = SubElement(Subdivision, 'CommunityStatusTypeCode')
-                CommunityStatusTypeCode.text = subdivision['CommunityStatusTypeCode']
+                CommunityStatusTypeCode.text = ET.CDATA(subdivision['CommunityStatusTypeCode'])
                 CommunityMinPrice = SubElement(Subdivision, 'CommunityMinPrice')
-                CommunityMinPrice.text = subdivision['CommunityMinPrice']
+                CommunityMinPrice.text = ET.CDATA(subdivision['CommunityMinPrice'])
                 CommunityMaxPrice = SubElement(Subdivision, 'CommunityMaxPrice')
-                CommunityMaxPrice.text = subdivision['CommunityMaxPrice']
+                CommunityMaxPrice.text = ET.CDATA(subdivision['CommunityMaxPrice'])
                 SubdivisionZip = SubElement(Subdivision, 'SubdivisionZip')
-                SubdivisionZip.text = subdivision['SubdivisionZip']
+                SubdivisionZip.text = ET.CDATA(subdivision['SubdivisionZip'])
                 SubdivisionAddress = SubElement(Subdivision, 'SubdivisionAddress')
-                SubdivisionAddress.text = subdivision['SubdivisionAddress']
+                SubdivisionAddress.text = ET.CDATA(subdivision['SubdivisionAddress'])
                 BuilderBrandName = SubElement(Subdivision, 'BuilderBrandName')
-                BuilderBrandName.text = subdivision['BuilderBrandName']
+                BuilderBrandName.text = ET.CDATA(subdivision['BuilderBrandName'])
                 SubdivisionLatitude = SubElement(Subdivision, 'SubdivisionLatitude')
-                SubdivisionLatitude.text = str(subdivision['SubdivisionLatitude'])
+                SubdivisionLatitude.text = ET.CDATA(str(subdivision['SubdivisionLatitude']))
                 SubdivisionLongitude = SubElement(Subdivision, 'SubdivisionLongitude')
-                SubdivisionLongitude.text = str(subdivision['SubdivisionLongitude'])
+                SubdivisionLongitude.text = ET.CDATA(str(subdivision['SubdivisionLongitude']))
                 SubdivisionContact1Name = SubElement(Subdivision, 'SubdivisionContact1Name')
-                SubdivisionContact1Name.text = subdivision['SubdivisionContact1Name']
+                SubdivisionContact1Name.text = ET.CDATA(subdivision['SubdivisionContact1Name'])
                 SubdivisionContact1Phone = SubElement(Subdivision, 'SubdivisionContact1Phone')
-                SubdivisionContact1Phone.text = subdivision['SubdivisionContact1Phone']
+                SubdivisionContact1Phone.text = ET.CDATA(subdivision['SubdivisionContact1Phone'])
                 SubdivisionContact1PhoneAlt = SubElement(Subdivision, 'SubdivisionContact1PhoneAlt')
-                SubdivisionContact1PhoneAlt.text = subdivision['SubdivisionContact1PhoneAlt']
+                SubdivisionContact1PhoneAlt.text = ET.CDATA(subdivision['SubdivisionContact1PhoneAlt'])
                 SubdivisionContact2Name = SubElement(Subdivision, 'SubdivisionContact2Name')
-                SubdivisionContact2Name.text = subdivision['SubdivisionContact2Name']
+                SubdivisionContact2Name.text = ET.CDATA(subdivision['SubdivisionContact2Name'])
                 SubdivisionContact2Phone = SubElement(Subdivision, 'SubdivisionContact2Phone')
-                SubdivisionContact2Phone.text = subdivision['SubdivisionContact2Phone']
+                SubdivisionContact2Phone.text = ET.CDATA(subdivision['SubdivisionContact2Phone'])
                 SubdivisionContact2PhoneAlt = SubElement(Subdivision, 'SubdivisionContact2PhoneAlt')
-                SubdivisionContact2PhoneAlt.text = subdivision['SubdivisionContact2PhoneAlt']
+                SubdivisionContact2PhoneAlt.text = ET.CDATA(subdivision['SubdivisionContact2PhoneAlt'])
                 SubdivisionContactEmail = SubElement(Subdivision, 'SubdivisionContactEmail')
-                SubdivisionContactEmail.text = subdivision['SubdivisionContactEmail']
+                SubdivisionContactEmail.text = ET.CDATA(subdivision['SubdivisionContactEmail'])
                 SubdivisionDescription = SubElement(Subdivision, 'SubdivisionDescription')
-                SubdivisionDescription.text = subdivision['SubdivisionDescription']
+                SubdivisionDescription.text = ET.CDATA(subdivision['SubdivisionDescription'])
                 SubdivisionShowDirections = SubElement(Subdivision, 'SubdivisionShowDirections')
-                SubdivisionShowDirections.text = subdivision['SubdivisionShowDirections']
+                SubdivisionShowDirections.text = ET.CDATA(subdivision['SubdivisionShowDirections'])
                 SubdivisionDrivingDirections = SubElement(Subdivision, 'SubdivisionDrivingDirections')
-                SubdivisionDrivingDirections.text = subdivision['SubdivisionDrivingDirections']
+                SubdivisionDrivingDirections.text = ET.CDATA(subdivision['SubdivisionDrivingDirections'])
                 SubdivisionPropertyTypeId = SubElement(Subdivision, 'SubdivisionPropertyTypeId')
-                SubdivisionPropertyTypeId.text = str(subdivision['SubdivisionPropertyTypeId'])
+                SubdivisionPropertyTypeId.text = ET.CDATA(str(subdivision['SubdivisionPropertyTypeId']))
                 SubdivisionCommunityTypeId = SubElement(Subdivision, 'SubdivisionCommunityTypeId')
-                SubdivisionCommunityTypeId.text = str(subdivision['SubdivisionCommunityTypeId'])
+                SubdivisionCommunityTypeId.text = ET.CDATA(str(subdivision['SubdivisionCommunityTypeId']))
                 for SubdivisionSchoolDistrictLeaid in subdivision['SubdivisionSchoolDistrictLeaid']:
                     SubdivisionSchoolDistrictLeaid1 = SubElement(Subdivision, 'SubdivisionSchoolDistrictLeaid')
-                    SubdivisionSchoolDistrictLeaid1.text = SubdivisionSchoolDistrictLeaid
+                    SubdivisionSchoolDistrictLeaid1.text = ET.CDATA(SubdivisionSchoolDistrictLeaid)
                 for SubdivisionSchoolsNcesid in subdivision['SubdivisionSchoolsNcesid']:
                     SubdivisionSchoolsNcesid1 = SubElement(Subdivision, 'SubdivisionSchoolsNcesid')
-                    SubdivisionSchoolsNcesid1.text = SubdivisionSchoolsNcesid
+                    SubdivisionSchoolsNcesid1.text = ET.CDATA(SubdivisionSchoolsNcesid)
                 SubdivisionSchoolComments = SubElement(Subdivision, 'SubdivisionSchoolComments')
-                SubdivisionSchoolComments.text = subdivision['SubdivisionSchoolComments']
+                SubdivisionSchoolComments.text = ET.CDATA(subdivision['SubdivisionSchoolComments'])
                 SubdivisionHasHoa = SubElement(Subdivision, 'SubdivisionHasHoa')
-                SubdivisionHasHoa.text = subdivision['SubdivisionHasHoa']
+                SubdivisionHasHoa.text = ET.CDATA(subdivision['SubdivisionHasHoa'])
                 SubdivisionHoaFee = SubElement(Subdivision, 'SubdivisionHoaFee')
-                SubdivisionHoaFee.text = subdivision['SubdivisionHoaFee']
+                SubdivisionHoaFee.text = ET.CDATA(subdivision['SubdivisionHoaFee'])
                 SubdivisionHoaBillingPeriod = SubElement(Subdivision, 'SubdivisionHoaBillingPeriod')
-                SubdivisionHoaBillingPeriod.text = subdivision['SubdivisionHoaBillingPeriod']
+                SubdivisionHoaBillingPeriod.text = ET.CDATA(subdivision['SubdivisionHoaBillingPeriod'])
                 SubdivisionNotes = SubElement(Subdivision, 'SubdivisionNotes')
-                SubdivisionNotes.text = subdivision['SubdivisionNotes']
+                SubdivisionNotes.text = ET.CDATA(subdivision['SubdivisionNotes'])
                 SubdivisionWebsite = SubElement(Subdivision, 'SubdivisionWebsite')
-                SubdivisionWebsite.text = subdivision['SubdivisionWebsite']
+                SubdivisionWebsite.text = ET.CDATA(subdivision['SubdivisionWebsite'])
                 for subdivisionProperty in subdivision['SubdivisionProperty']:
-                    SubdivisionProperty = SubElement(Subdivision, 'SubdivisionProperty')
-                    PropertyId = SubElement(SubdivisionProperty, 'PropertyId')
-                    PropertyId.text = subdivisionProperty['PropertyId']
-                    PropertyAddress = SubElement(SubdivisionProperty, 'PropertyAddress')
-                    PropertyAddress.text = subdivisionProperty['PropertyAddress']
-                    PropertyZip = SubElement(SubdivisionProperty, 'PropertyZip')
-                    PropertyZip.text = subdivisionProperty['PropertyZip']
-                    PropertyPrice = SubElement(SubdivisionProperty, 'PropertyPrice')
-                    PropertyPrice.text = subdivisionProperty['PropertyPrice']
-                    PropertyLatitude = SubElement(SubdivisionProperty, 'PropertyLatitude')
-                    PropertyLatitude.text = str(subdivisionProperty['PropertyLatitude'])
-                    PropertyLongitude = SubElement(SubdivisionProperty, 'PropertyLongitude')
-                    PropertyLongitude.text = str(subdivisionProperty['PropertyLongitude'])
-                    PropertyClassCode = SubElement(SubdivisionProperty, 'PropertyClassCode')
-                    PropertyClassCode.text = subdivisionProperty['PropertyClassCode']
-                    PropertyStatusId = SubElement(SubdivisionProperty, 'PropertyStatusId')
-                    PropertyStatusId.text = subdivisionProperty['PropertyStatusId']
-                    PropertyStageId = SubElement(SubdivisionProperty, 'PropertyStageId')
-                    PropertyStageId.text = subdivisionProperty['PropertyStageId']
-                    CompletionDate = SubElement(SubdivisionProperty, 'CompletionDate')
-                    CompletionDate.text = subdivisionProperty['CompletionDate']
-                    PropertyTypeId = SubElement(SubdivisionProperty, 'PropertyTypeId')
-                    PropertyTypeId.text = str(subdivisionProperty['PropertyTypeId'])
-                    PropertyRemarks = SubElement(SubdivisionProperty, 'PropertyRemarks')
-                    PropertyRemarks.text = subdivisionProperty['PropertyRemarks']
-                    PropertyShowDirections = SubElement(SubdivisionProperty, 'PropertyShowDirections')
-                    PropertyShowDirections.text = subdivisionProperty['PropertyShowDirections']
-                    PropertyContact1Name = SubElement(SubdivisionProperty, 'PropertyContact1Name')
-                    PropertyContact1Name.text = subdivisionProperty['PropertyContact1Name']
-                    PropertyContact1Phone = SubElement(SubdivisionProperty, 'PropertyContact1Phone')
-                    PropertyContact1Phone.text = subdivisionProperty['PropertyContact1Phone']
-                    PropertyContact1PhoneAlt = SubElement(SubdivisionProperty, 'PropertyContact1PhoneAlt')
-                    PropertyContact1PhoneAlt.text = subdivisionProperty['PropertyContact1PhoneAlt']
-                    PropertyContact2Name = SubElement(SubdivisionProperty, 'PropertyContact2Name')
-                    PropertyContact2Name.text = subdivisionProperty['PropertyContact2Name']
-                    PropertyContact2Phone = SubElement(SubdivisionProperty, 'PropertyContact2Phone')
-                    PropertyContact2Phone.text = subdivisionProperty['PropertyContact2Phone']
-                    PropertyContact2PhoneAlt = SubElement(SubdivisionProperty, 'PropertyContact2PhoneAlt')
-                    PropertyContact2PhoneAlt.text = subdivisionProperty['PropertyContact2PhoneAlt']
-                    PropertyContactEmail = SubElement(SubdivisionProperty, 'PropertyContactEmail')
-                    PropertyContactEmail.text = subdivisionProperty['PropertyContactEmail']
-                    PropertyDrivingDirections = SubElement(SubdivisionProperty, 'PropertyDrivingDirections')
-                    PropertyDrivingDirections.text = subdivisionProperty['PropertyDrivingDirections']
-                    PropertyBaths = SubElement(SubdivisionProperty, 'PropertyBaths')
-                    PropertyBaths.text = subdivisionProperty['PropertyBaths']
-                    PropertyHalfBaths = SubElement(SubdivisionProperty, 'PropertyHalfBaths')
-                    PropertyHalfBaths.text = subdivisionProperty['PropertyHalfBaths']
-                    PropertyBeds = SubElement(SubdivisionProperty, 'PropertyBeds')
-                    PropertyBeds.text = subdivisionProperty['PropertyBeds']
-                    PropertyLiving = SubElement(SubdivisionProperty, 'PropertyLiving')
-                    PropertyLiving.text = subdivisionProperty['PropertyLiving']
-                    PropertyDining = SubElement(SubdivisionProperty, 'PropertyDining')
-                    PropertyDining.text = subdivisionProperty['PropertyDining']
-                    PropertyOtherRooms = SubElement(SubdivisionProperty, 'PropertyOtherRooms')
-                    PropertyOtherRooms.text = subdivisionProperty['PropertyOtherRooms']
-                    PropertyStories = SubElement(SubdivisionProperty, 'PropertyStories')
-                    PropertyStories.text = subdivisionProperty['PropertyStories']
-                    PropertyMaster = SubElement(SubdivisionProperty, 'PropertyMaster')
-                    PropertyMaster.text = subdivisionProperty['PropertyMaster']
-                    PropertyGarage = SubElement(SubdivisionProperty, 'PropertyGarage')
-                    PropertyGarage.text = subdivisionProperty['PropertyGarage']
-                    for PropertySchoolDistrictLEAID in subdivisionProperty['PropertySchoolDistrictLeaid']:
-                        PropertySchoolDistrictLEAID1 = SubElement(SubdivisionProperty, 'PropertySchoolDistrictLEAID')
-                        PropertySchoolDistrictLEAID1.text = PropertySchoolDistrictLEAID
-                    for PropertySchoolsNCESID in subdivisionProperty['PropertySchoolsNcesid']:
-                        PropertySchoolsNCESID1 = SubElement(SubdivisionProperty, 'PropertySchoolsNCESID')
-                        PropertySchoolsNCESID1.text = PropertySchoolsNCESID
-                    PropertySquareFeet = SubElement(SubdivisionProperty,'PropertySquareFeet')
-                    PropertySquareFeet.text = subdivisionProperty['PropertySquareFeet']
-                    LotSize = SubElement(SubdivisionProperty,'LotSize')
-                    LotSize.text = subdivisionProperty['LotSize']
-                    LotDescription = SubElement(SubdivisionProperty,'LotDescription')
-                    LotDescription.text = subdivisionProperty['LotDescription']
-                    FloorPlanNumber = SubElement(SubdivisionProperty,'FloorPlanNumber')
-                    FloorPlanNumber.text = subdivisionProperty['FloorPlanNumber']
-                    FloorPlanName = SubElement(SubdivisionProperty,'FloorPlanName')
-                    FloorPlanName.text = subdivisionProperty['FloorPlanName']
-                    PropertyCommunityTypeId = SubElement(SubdivisionProperty,'PropertyCommunityTypeId')
-                    PropertyCommunityTypeId.text = str(subdivisionProperty['PropertyCommunityTypeId'])
-                    PropertyVirtualTour = SubElement(SubdivisionProperty,'PropertyVirtualTour')
-                    PropertyVirtualTour.text = subdivisionProperty['PropertyVirtualTour']
-                    PropertyPlanViewUrl = SubElement(SubdivisionProperty,'PropertyPlanViewUrl')
-                    PropertyPlanViewUrl.text = subdivisionProperty['PropertyPlanViewUrl']
-                    PropertySchoolComments = SubElement(SubdivisionProperty,'PropertySchoolComments')
-                    PropertySchoolComments.text = subdivisionProperty['PropertySchoolComments']
-                    PropertyHasHoa = SubElement(SubdivisionProperty,'PropertyHasHoa')
-                    PropertyHasHoa.text = subdivisionProperty['PropertyHasHoa']
-                    PropertyHoaFee = SubElement(SubdivisionProperty,'PropertyHoaFee')
-                    PropertyHoaFee.text = subdivisionProperty['PropertyHoaFee']
-                    PropertyHoaBillingPeriod = SubElement(SubdivisionProperty,'PropertyHoaBillingPeriod')
-                    PropertyHoaBillingPeriod.text = subdivisionProperty['PropertyHoaBillingPeriod']
-                    for propertyFloorPlanImage in subdivisionProperty['PropertyFloorPlanImage']:
-                        PropertyFloorPlanImage = SubElement(SubdivisionProperty, 'PropertyFloorPlanImage')
-                        PropertyFloorPlanImageURL = SubElement(PropertyFloorPlanImage, 'PropertyFloorPlanImageURL')
-                        PropertyFloorPlanImageURL.text = propertyFloorPlanImage['PropertyFloorPlanImageUrl']
-                        PropertyFloorPlanImageDescription = SubElement(PropertyFloorPlanImage, 'PropertyFloorPlanImageDescription')
-                        PropertyFloorPlanImageDescription.text = propertyFloorPlanImage['PropertyFloorPlanImageDescription']
+                    for class_code in subdivisionProperty['PropertyClassCode']:
+                        SubdivisionProperty = SubElement(Subdivision, 'SubdivisionProperty')
+                        PropertyId = SubElement(SubdivisionProperty, 'PropertyId')
+                        PropertyId.text = ET.CDATA(subdivisionProperty['PropertyId'])
+                        PropertyAddress = SubElement(SubdivisionProperty, 'PropertyAddress')
+                        PropertyAddress.text = ET.CDATA(subdivisionProperty['PropertyAddress'])
+                        PropertyZip = SubElement(SubdivisionProperty, 'PropertyZip')
+                        PropertyZip.text = ET.CDATA(subdivisionProperty['PropertyZip'])
+                        PropertyPrice = SubElement(SubdivisionProperty, 'PropertyPrice')
+                        PropertyPrice.text = ET.CDATA(subdivisionProperty['PropertyPrice'])
+                        PropertyLatitude = SubElement(SubdivisionProperty, 'PropertyLatitude')
+                        PropertyLatitude.text = ET.CDATA(str(subdivisionProperty['PropertyLatitude']))
+                        PropertyLongitude = SubElement(SubdivisionProperty, 'PropertyLongitude')
+                        PropertyLongitude.text = ET.CDATA(str(subdivisionProperty['PropertyLongitude']))
+                        PropertyClassCode = SubElement(SubdivisionProperty, 'PropertyClassCode')
+                        PropertyClassCode.text = ET.CDATA(class_code)
+                        PropertyStatusId = SubElement(SubdivisionProperty, 'PropertyStatusId')
+                        PropertyStatusId.text = ET.CDATA(subdivisionProperty['PropertyStatusId'])
+                        PropertyStageId = SubElement(SubdivisionProperty, 'PropertyStageId')
+                        PropertyStageId.text = ET.CDATA(subdivisionProperty['PropertyStageId'])
+                        CompletionDate = SubElement(SubdivisionProperty, 'CompletionDate')
+                        CompletionDate.text = ET.CDATA(subdivisionProperty['CompletionDate'])
+                        PropertyTypeId = SubElement(SubdivisionProperty, 'PropertyTypeId')
+                        PropertyTypeId.text = ET.CDATA(str(subdivisionProperty['PropertyTypeId']))
+                        PropertyRemarks = SubElement(SubdivisionProperty, 'PropertyRemarks')
+                        PropertyRemarks.text = ET.CDATA(subdivisionProperty['PropertyRemarks'])
+                        PropertyShowDirections = SubElement(SubdivisionProperty, 'PropertyShowDirections')
+                        PropertyShowDirections.text = ET.CDATA(subdivisionProperty['PropertyShowDirections'])
+                        PropertyContact1Name = SubElement(SubdivisionProperty, 'PropertyContact1Name')
+                        PropertyContact1Name.text = ET.CDATA(subdivisionProperty['PropertyContact1Name'])
+                        PropertyContact1Phone = SubElement(SubdivisionProperty, 'PropertyContact1Phone')
+                        PropertyContact1Phone.text = ET.CDATA(subdivisionProperty['PropertyContact1Phone'])
+                        PropertyContact1PhoneAlt = SubElement(SubdivisionProperty, 'PropertyContact1PhoneAlt')
+                        PropertyContact1PhoneAlt.text = ET.CDATA(subdivisionProperty['PropertyContact1PhoneAlt'])
+                        PropertyContact2Name = SubElement(SubdivisionProperty, 'PropertyContact2Name')
+                        PropertyContact2Name.text = ET.CDATA(subdivisionProperty['PropertyContact2Name'])
+                        PropertyContact2Phone = SubElement(SubdivisionProperty, 'PropertyContact2Phone')
+                        PropertyContact2Phone.text = ET.CDATA(subdivisionProperty['PropertyContact2Phone'])
+                        PropertyContact2PhoneAlt = SubElement(SubdivisionProperty, 'PropertyContact2PhoneAlt')
+                        PropertyContact2PhoneAlt.text = ET.CDATA(subdivisionProperty['PropertyContact2PhoneAlt'])
+                        PropertyContactEmail = SubElement(SubdivisionProperty, 'PropertyContactEmail')
+                        PropertyContactEmail.text = ET.CDATA(subdivisionProperty['PropertyContactEmail'])
+                        PropertyDrivingDirections = SubElement(SubdivisionProperty, 'PropertyDrivingDirections')
+                        PropertyDrivingDirections.text = ET.CDATA(subdivisionProperty['PropertyDrivingDirections'])
+                        PropertyBaths = SubElement(SubdivisionProperty, 'PropertyBaths')
+                        PropertyBaths.text = ET.CDATA(subdivisionProperty['PropertyBaths'])
+                        PropertyHalfBaths = SubElement(SubdivisionProperty, 'PropertyHalfBaths')
+                        PropertyHalfBaths.text = ET.CDATA(subdivisionProperty['PropertyHalfBaths'])
+                        PropertyBeds = SubElement(SubdivisionProperty, 'PropertyBeds')
+                        PropertyBeds.text = ET.CDATA(subdivisionProperty['PropertyBeds'])
+                        PropertyLiving = SubElement(SubdivisionProperty, 'PropertyLiving')
+                        PropertyLiving.text = ET.CDATA(subdivisionProperty['PropertyLiving'])
+                        PropertyDining = SubElement(SubdivisionProperty, 'PropertyDining')
+                        PropertyDining.text = ET.CDATA(subdivisionProperty['PropertyDining'])
+                        PropertyOtherRooms = SubElement(SubdivisionProperty, 'PropertyOtherRooms')
+                        PropertyOtherRooms.text = ET.CDATA(subdivisionProperty['PropertyOtherRooms'])
+                        PropertyStories = SubElement(SubdivisionProperty, 'PropertyStories')
+                        PropertyStories.text = ET.CDATA(subdivisionProperty['PropertyStories'])
+                        PropertyMaster = SubElement(SubdivisionProperty, 'PropertyMaster')
+                        PropertyMaster.text = ET.CDATA(subdivisionProperty['PropertyMaster'])
+                        PropertyGarage = SubElement(SubdivisionProperty, 'PropertyGarage')
+                        PropertyGarage.text = ET.CDATA(subdivisionProperty['PropertyGarage'])
+                        for PropertySchoolDistrictLEAID in subdivisionProperty['PropertySchoolDistrictLeaid']:
+                            PropertySchoolDistrictLEAID1 = SubElement(SubdivisionProperty, 'PropertySchoolDistrictLEAID')
+                            PropertySchoolDistrictLEAID1.text = ET.CDATA(PropertySchoolDistrictLEAID)
+                        for PropertySchoolsNCESID in subdivisionProperty['PropertySchoolsNcesid']:
+                            PropertySchoolsNCESID1 = SubElement(SubdivisionProperty, 'PropertySchoolsNCESID')
+                            PropertySchoolsNCESID1.text = ET.CDATA(PropertySchoolsNCESID)
+                        PropertySquareFeet = SubElement(SubdivisionProperty,'PropertySquareFeet')
+                        PropertySquareFeet.text = ET.CDATA(subdivisionProperty['PropertySquareFeet'])
+                        LotSize = SubElement(SubdivisionProperty,'LotSize')
+                        LotSize.text = ET.CDATA(subdivisionProperty['LotSize'])
+                        LotDescription = SubElement(SubdivisionProperty,'LotDescription')
+                        LotDescription.text = ET.CDATA(subdivisionProperty['LotDescription'])
+                        FloorPlanNumber = SubElement(SubdivisionProperty,'FloorPlanNumber')
+                        FloorPlanNumber.text = ET.CDATA(subdivisionProperty['FloorPlanNumber'])
+                        FloorPlanName = SubElement(SubdivisionProperty,'FloorPlanName')
+                        FloorPlanName.text = ET.CDATA(subdivisionProperty['FloorPlanName'])
+                        PropertyCommunityTypeId = SubElement(SubdivisionProperty,'PropertyCommunityTypeId')
+                        PropertyCommunityTypeId.text = ET.CDATA(str(subdivisionProperty['PropertyCommunityTypeId']))
+                        PropertyVirtualTour = SubElement(SubdivisionProperty,'PropertyVirtualTour')
+                        PropertyVirtualTour.text = ET.CDATA(subdivisionProperty['PropertyVirtualTour'])
+                        PropertyPlanViewUrl = SubElement(SubdivisionProperty,'PropertyPlanViewUrl')
+                        PropertyPlanViewUrl.text = ET.CDATA(subdivisionProperty['PropertyPlanViewUrl'])
+                        PropertySchoolComments = SubElement(SubdivisionProperty,'PropertySchoolComments')
+                        PropertySchoolComments.text = ET.CDATA(subdivisionProperty['PropertySchoolComments'])
+                        PropertyHasHoa = SubElement(SubdivisionProperty,'PropertyHasHoa')
+                        PropertyHasHoa.text = ET.CDATA(subdivisionProperty['PropertyHasHoa'])
+                        PropertyHoaFee = SubElement(SubdivisionProperty,'PropertyHoaFee')
+                        PropertyHoaFee.text = ET.CDATA(subdivisionProperty['PropertyHoaFee'])
+                        PropertyHoaBillingPeriod = SubElement(SubdivisionProperty,'PropertyHoaBillingPeriod')
+                        PropertyHoaBillingPeriod.text = ET.CDATA(subdivisionProperty['PropertyHoaBillingPeriod'])
+                        for propertyFloorPlanImage in subdivisionProperty['PropertyFloorPlanImage']:
+                            PropertyFloorPlanImage = SubElement(SubdivisionProperty, 'PropertyFloorPlanImage')
+                            PropertyFloorPlanImageURL = SubElement(PropertyFloorPlanImage, 'PropertyFloorPlanImageURL')
+                            PropertyFloorPlanImageURL.text = ET.CDATA(propertyFloorPlanImage['PropertyFloorPlanImageUrl'])
+                            PropertyFloorPlanImageDescription = SubElement(PropertyFloorPlanImage, 'PropertyFloorPlanImageDescription')
+                            PropertyFloorPlanImageDescription.text = ET.CDATA(propertyFloorPlanImage['PropertyFloorPlanImageDescription'])
 
-                    for propertyElevationImage in subdivisionProperty['PropertyElevationImage']:
-                        PropertyElevationImage = SubElement(SubdivisionProperty, 'PropertyElevationImage')
-                        PropertyElevationImageURL = SubElement(PropertyElevationImage, 'PropertyElevationImageURL')
-                        PropertyElevationImageURL.text = propertyElevationImage['PropertyElevationImageUrl']
-                        PropertyElevationImageDescription = SubElement(PropertyElevationImage, 'PropertyElevationImageDescription')
-                        PropertyElevationImageDescription.text = propertyElevationImage['PropertyElevationImageDescription']
+                        for propertyElevationImage in subdivisionProperty['PropertyElevationImage']:
+                            PropertyElevationImage = SubElement(SubdivisionProperty, 'PropertyElevationImage')
+                            PropertyElevationImageURL = SubElement(PropertyElevationImage, 'PropertyElevationImageURL')
+                            PropertyElevationImageURL.text = ET.CDATA(propertyElevationImage['PropertyElevationImageUrl'])
+                            PropertyElevationImageDescription = SubElement(PropertyElevationImage, 'PropertyElevationImageDescription')
+                            PropertyElevationImageDescription.text = ET.CDATA(propertyElevationImage['PropertyElevationImageDescription'])
 
-                    for propertyExteriorInteriorImage in subdivisionProperty['PropertyExteriorInteriorImage']:
-                        PropertyExteriorInteriorImage = SubElement(SubdivisionProperty, 'PropertyExteriorInteriorImage')
-                        PropertyInteriorImageURL = SubElement(PropertyExteriorInteriorImage, 'PropertyInteriorImageURL')
-                        PropertyInteriorImageURL.text = propertyExteriorInteriorImage['PropertyInteriorImageUrl']
-                        PropertyInteriorImageDescription = SubElement(PropertyExteriorInteriorImage, 'PropertyInteriorImageDescription')
-                        PropertyInteriorImageDescription.text = propertyExteriorInteriorImage['PropertyInteriorImageDescription']
+                        for propertyExteriorInteriorImage in subdivisionProperty['PropertyExteriorInteriorImage']:
+                            PropertyExteriorInteriorImage = SubElement(SubdivisionProperty, 'PropertyExteriorInteriorImage')
+                            PropertyInteriorImageURL = SubElement(PropertyExteriorInteriorImage, 'PropertyInteriorImageURL')
+                            PropertyInteriorImageURL.text = ET.CDATA(propertyExteriorInteriorImage['PropertyInteriorImageUrl'])
+                            PropertyInteriorImageDescription = SubElement(PropertyExteriorInteriorImage, 'PropertyInteriorImageDescription')
+                            PropertyInteriorImageDescription.text = ET.CDATA(propertyExteriorInteriorImage['PropertyInteriorImageDescription'])
 
-                    Promotion = SubElement(SubdivisionProperty, 'Promotion')
-                    promotion = subdivisionProperty['Promotion']
-                    PromoId = SubElement(Promotion,'PromoId')
-                    PromoId.text = promotion['PromoId']
-                    PromoType = SubElement(Promotion,'PromoType')
-                    PromoType.text = promotion['PromoType']
-                    PromoHeadline = SubElement(Promotion,'PromoHeadline')
-                    PromoHeadline.text = promotion['PromoHeadline']
-                    PromoDescription = SubElement(Promotion,'PromoDescription')
-                    PromoDescription.text = promotion['PromoDescription']
-                    PromoURL = SubElement(Promotion,'PromoURL')
-                    PromoURL.text = promotion['PromoUrl']
-                    PromoStartDate = SubElement(Promotion,'PromoStartDate')
-                    PromoStartDate.text = promotion['PromoStartDate']
-                    PromoEndDate = SubElement(Promotion,'PromoEndDate')
-                    PromoEndDate.text = promotion['PromoEndDate']
+                        Promotion = SubElement(SubdivisionProperty, 'Promotion')
+                        promotion = subdivisionProperty['Promotion']
+                        PromoId = SubElement(Promotion,'PromoId')
+                        PromoId.text = ET.CDATA(promotion['PromoId'])
+                        PromoType = SubElement(Promotion,'PromoType')
+                        PromoType.text = ET.CDATA(promotion['PromoType'])
+                        PromoHeadline = SubElement(Promotion,'PromoHeadline')
+                        PromoHeadline.text = ET.CDATA(promotion['PromoHeadline'])
+                        PromoDescription = SubElement(Promotion,'PromoDescription')
+                        PromoDescription.text = ET.CDATA(promotion['PromoDescription'])
+                        PromoURL = SubElement(Promotion,'PromoURL')
+                        PromoURL.text = ET.CDATA(promotion['PromoUrl'])
+                        PromoStartDate = SubElement(Promotion,'PromoStartDate')
+                        PromoStartDate.text = ET.CDATA(promotion['PromoStartDate'])
+                        PromoEndDate = SubElement(Promotion,'PromoEndDate')
+                        PromoEndDate.text = ET.CDATA(promotion['PromoEndDate'])
 
                 for subdivisionFlyer in subdivision['SubdivisionFlyer']:
                     SubdivisionFlyer = SubElement(Subdivision,'SubdivisionFlyer')
                     SubdivisionFlyerImageURL = SubElement(SubdivisionFlyer,'SubdivisionFlyerImageURL')
-                    SubdivisionFlyerImageURL.text = subdivisionFlyer['SubdivisionFlyerImageUrl']
+                    SubdivisionFlyerImageURL.text = ET.CDATA(subdivisionFlyer['SubdivisionFlyerImageUrl'])
                     SubdivisionFlyerDescription = SubElement(SubdivisionFlyer,'SubdivisionFlyerDescription')
-                    SubdivisionFlyerDescription.text = subdivisionFlyer['SubdivisionFlyerDescription']
+                    SubdivisionFlyerDescription.text = ET.CDATA(subdivisionFlyer['SubdivisionFlyerDescription'])
 
                 for subImage in subdivision['SubImage']:
                     SubImage = SubElement(Subdivision,'SubImage')
                     SubImageUrl = SubElement(SubImage,'SubImageURL')
-                    SubImageUrl.text = subImage['SubImageUrl']
+                    SubImageUrl.text = ET.CDATA(subImage['SubImageUrl'])
                     SubImageCaption = SubElement(SubImage,'SubImageCaption')
-                    SubImageCaption.text = subImage['SubImageCaption']
+                    SubImageCaption.text = ET.CDATA(subImage['SubImageCaption'])
                     SubImageURLContentType = SubElement(SubImage,'SubImageURLContentType')
-                    SubImageURLContentType.text = subImage['SubImageUrlContentType']
+                    SubImageURLContentType.text = ET.CDATA(subImage['SubImageUrlContentType'])
                     SubImageOrderBy = SubElement(SubImage,'SubImageOrderBy')
-                    SubImageOrderBy.text = subImage['SubImageOrderBy']
+                    SubImageOrderBy.text = ET.CDATA(subImage['SubImageOrderBy'])
                     MainFlag = SubElement(SubImage,'MainFlag')
-                    MainFlag.text = subImage['MainFlag']
+                    MainFlag.text = ET.CDATA(subImage['MainFlag'])
 
                 for subVideo in subdivision['SubVideo']:
                     SubVideo = SubElement(Subdivision,'SubVideo')
                     SubVideoURL = SubElement(SubVideo,'SubVideoURL')
-                    SubVideoURL.text = subVideo['SubVideoUrl']
+                    SubVideoURL.text = ET.CDATA(subVideo['SubVideoUrl'])
                     SubVideoCaption = SubElement(SubVideo,'SubVideoCaption')
-                    SubVideoCaption.text = subVideo['SubVideoCaption']
+                    SubVideoCaption.text = ET.CDATA(subVideo['SubVideoCaption'])
                     SubVideoUrlContentType = SubElement(SubVideo,'SubVideoUrlContentType')
-                    SubVideoUrlContentType.text = subVideo['SubVideoUrlContentType']
+                    SubVideoUrlContentType.text = ET.CDATA(subVideo['SubVideoUrlContentType'])
                     SubVideoOrderBy = SubElement(SubVideo,'SubVideoOrderBy')
-                    SubVideoOrderBy.text = subVideo['SubVideoOrderBy']
+                    SubVideoOrderBy.text = ET.CDATA(subVideo['SubVideoOrderBy'])
                     MainFlag = SubElement(SubVideo,'MainFlag')
-                    MainFlag.text = subVideo['MainFlag']
+                    MainFlag.text = ET.CDATA(subVideo['MainFlag'])
                 
                 Promotion = SubElement(Subdivision, 'Promotion')
                 promotion = subdivision['Promotion']
                 PromoId = SubElement(Promotion,'PromoId')
-                PromoId.text = promotion['PromoId']
+                PromoId.text = ET.CDATA(promotion['PromoId'])
                 PromoType = SubElement(Promotion,'PromoType')
-                PromoType.text = promotion['PromoType']
+                PromoType.text = ET.CDATA(promotion['PromoType'])
                 PromoHeadline = SubElement(Promotion,'PromoHeadline')
-                PromoHeadline.text = promotion['PromoHeadline']
+                PromoHeadline.text = ET.CDATA(promotion['PromoHeadline'])
                 PromoDescription = SubElement(Promotion,'PromoDescription')
-                PromoDescription.text = promotion['PromoDescription']
+                PromoDescription.text = ET.CDATA(promotion['PromoDescription'])
                 PromoURL = SubElement(Promotion,'PromoURL')
-                PromoURL.text = promotion['PromoUrl']
+                PromoURL.text = ET.CDATA(promotion['PromoUrl'])
                 PromoStartDate = SubElement(Promotion,'PromoStartDate')
-                PromoStartDate.text = promotion['PromoStartDate']
+                PromoStartDate.text = ET.CDATA(promotion['PromoStartDate'])
                 PromoEndDate = SubElement(Promotion,'PromoEndDate')
-                PromoEndDate.text = promotion['PromoEndDate']
+                PromoEndDate.text = ET.CDATA(promotion['PromoEndDate'])
 
-
-            xml = ET.tostring(Builder, encoding='unicode')
-            with open('final.xml','w') as f:
-                f.write('<?xml version="1.0" ?>\n' + xml)
-
+            tree = ET.ElementTree(Builder)
+            tree.write('final.xml', encoding='utf-8', xml_declaration=True)
 
         create_builder_xml(welcome)
 

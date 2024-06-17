@@ -40,18 +40,18 @@ class HomespiderSpider(scrapy.Spider):
         features = response.css('div.wpl-column.rows.feature').extract()
         features = [clean_html(x) for x in features]
         basic_details = response.css('div.wpl_category_1 div.wpl_prp_show_detail_boxes_cont div').extract()
-        basic_details = [clean_html(x).strip() for x in basic_details]
-        name = response.css('h1.title_text::text').get().strip()
+        basic_details = [clean_html(x) for x in basic_details]
+        name = response.css('h1.title_text::text').get()
         video_link = response.css('li.wpl_videos_video iframe::attr(src)').get()
         images = response.xpath("//div[@id = 'wpl_gallery_wrapper-3']//li/@data-src").extract()
         blueprint = response.xpath("//div[@id = 'wpl_gallery_wrapper-101']//li/@data-src").extract()
-        address_map = {entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1].strip() for entry in data[len(features):-len(basic_details)]}
+        address_map = {entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in data[len(features):-len(basic_details)]}
         address_map ['latitude'] = float(response.text.split('googlemap_lt":')[1].split(',')[0])
         address_map ['longitude'] = float(response.text.split('googlemap_ln":')[1].split(',')[0])
         address_map['address'] = response.css('span.wpl-location::text').get()
         
         self.home_item['Name']=name
-        self.home_item['BasicDetails']={entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1].strip() for entry in basic_details}
+        self.home_item['BasicDetails']={entry.split(':')[0].strip().replace(' ', '_'): entry.split(':')[1] for entry in basic_details}
         self.home_item['AddressMap']=address_map
         self.home_item['Features']=features
         self.home_item['Images']=images
