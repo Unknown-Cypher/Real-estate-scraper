@@ -118,7 +118,9 @@ class HomescraperPipeline:
             else:
                     SubdivisionProperty['PropertyTypeId'] = '23'
             SubdivisionProperty['PropertyRemarks'] = '. '.join(item["Features"])
-            SubdivisionProperty['PropertyBaths'] = item['BasicDetails']["Bathrooms"]
+            SubdivisionProperty['PropertyBaths'] = str(int(float(item['BasicDetails']["Bathrooms"])))
+            if item['BasicDetails']["Bathrooms"].endswith('.5'):
+                SubdivisionProperty['PropertyHalfBaths'] = '1'
             SubdivisionProperty['FloorPlanName'] = item['AddressMap']['address']
             SubdivisionProperty['FloorPlanNumber'] = item['AddressMap']['address']
             SubdivisionProperty['PropertyBeds'] = item['BasicDetails']["Bedrooms"]
