@@ -1,5 +1,5 @@
 from itemadapter import ItemAdapter
-# import xml.etree.ElementTree as ET
+import re
 from lxml import etree as ET
 from lxml.etree import Element, SubElement
 import copy
@@ -23,6 +23,14 @@ class HomescraperPipeline:
         
     
     def close_spider(self,spider):
+
+        #function to format the phone numbers
+        def reformat_phone_number(phone_number):
+            digits = re.sub(r'\D', '', phone_number)
+            formatted_phone_number = f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+            return formatted_phone_number
+        
+
         Builder = homescraper.items.Builder()
         Builder.initialize_defaults()
         coop_rate = homescraper.items.CoopRate()
@@ -63,6 +71,7 @@ class HomescraperPipeline:
                 Subdivision['SubdivisionAddress'] = item['AddressMap']['Zip_Code'] + ' ' +item['AddressMap']["Street"]
                 Subdivision['SubdivisionLatitude'] = item['AddressMap']['latitude']
                 Subdivision['SubdivisionLongitude'] = item['AddressMap']['longitude']
+                Subdivision['SubdivisionContact1Phone'] = reformat_phone_number(Subdivision['SubdivisionContact1Phone'])
                 if item["BasicDetails"]['Property_Type'] == 'Multi-Family':
                     Subdivision['SubdivisionPropertyTypeId'] = '2'
                 elif item["BasicDetails"]['Property_Type'] == 'Single Family':
@@ -92,6 +101,7 @@ class HomescraperPipeline:
 
             SubdivisionProperty['PropertyAddress'] = item['AddressMap']['address'].split(',')[0]
             SubdivisionProperty['PropertyZip'] = item['AddressMap']['Zip_Code']
+            SubdivisionProperty['PropertyContact1Phone'] = reformat_phone_number(SubdivisionProperty['PropertyContact1Phone'])
             SubdivisionProperty['PropertyLatitude'] = item['AddressMap']['latitude']
             SubdivisionProperty['PropertyLongitude'] = item['AddressMap']['longitude']
             SubdivisionProperty['PropertyPrice'] = item["BasicDetails"]["Price"].replace(',','')
